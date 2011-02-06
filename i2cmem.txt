@@ -1,0 +1,53 @@
+Okay - for i2cmem - what is actually happening on the devices?
+
+
+a) Write 'dan' to the device Address C0. 3 bytes, at mem 0.
+b) Read 3 bytes, from mem 0, device Address C0.
+
+a) First the whole command to the I2c device:
+/x55/xc0/x00/x03/dan
+55 - I2C_AD1 - I2C 1 byte addressed device read/write commands.
+A0 - Device Address byte - in this case, 
+	A = 1010
+	0 = 0000
+	Because all 24c02 devices take 1010 in their addressing in the first 4 significant bits. 1010.
+	The 8th bit is low, so this is a write. If it is high, it would be a read.
+00 - Memory Address byte
+03 - Byte count
+d a n - 3 byte data sequence.
+
+- Clock is used to positive edge clock data in, and negative edge data out.
+
+First startup - 
+	hi to low SDA on with SCL hight is start - before any command.
+
+
+Signals for a write
+
+Clock low. Data is high.
+Clock is then brought high. at minimim 0.6uS after, data is brought low. This condition is held for minimum 0.6uS then 
+clock is brought low, while data remains low. The device is now ready to receive command.
+
+Start:				
+Clock		 __
+			__/  \_
+			___      
+Data		 \___
+
+Commands - first the device address + mode:
+Pulse count:
+						1			2			3			4			5			6			7			8			9
+				   __    __    __    __    __    __    __    __    __   
+clock:	__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__/  \__
+						   			 	 	 	 							
+						1	 		0	 	 	1	 		0			0			0			0			0
+				  ____        ____ 
+Sda I:  _/    \______/    \_____________________________________
+	
+		 	  _________________________________________________
+Sda O: 
+
+SDA is open collector. So with a pull up, if the logic device controlling the Data line is now Open drain. 
+Ack is sent.
+Clock 10 - send Memory address - 8 x 0's, wait for ack.
+Send 
