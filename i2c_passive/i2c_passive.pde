@@ -1,35 +1,40 @@
-//#include <serial.h>
 
 //inputs
-const int clockPin = 11;
-const int dataPin = 10;
-
-//outputs
-const int ledPin = 13;
+const int clockPin = 2;
+const int dataPin = 3;
+const int clockInt = 0;
+const int dateInt = 1;
 
 int clockState;
 int dataState;
+
+void handleClockInt() {
+  int newClockState = !clockState;
+  clockState = newClockState;
+}
+
+void handleDataInt() {
+  int newDataState = !dataState;
+  if(clockState) {// Clock high
+    //Low to high
+    if(!dataState && newDataState) {
+      Serial.println("Seen stop");
+    }
+    if(dataState && !newDataState) {
+      Serial.println("Seen start");
+    }
+  }
+  dataState = newDataState;
+}
+
 void setup() {
-  pinMode(ledPin, OUTPUT);
   Serial.begin(9600);
   pinMode(clockPin, INPUT);
   pinMode(dataPin, INPUT);
   Serial.println("Starting monitor");
   clockState = digitalRead(clockPin);
-  dataState = digitalRead(dataPin);
+  dataState = digitalRead(dataPin);  
+  attachInterrupt(clockInt, handleClockInt, CHANGE);
+  attachInterrupt(dataInt, handleDataInt, CHANGE);
 }
 
-void loop() {
-  int newClockState = digitalRead(clockPin);
-  int newDataState = digitalRead(dataPin);
-  if(clockState == HIGH && newClockState == HIGH) {
-    if(dataState == HIGH && newDataState == LOW) {
-      Serial.println("Seen start");
-    }
-    if(dataState == LOW && newDataState == HIGH) {
-      Serial.println("Seen stop");
-    }
-  }
-  clockState = newClockState;
-  dataState = newDataState;
-}
