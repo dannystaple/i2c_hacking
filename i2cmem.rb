@@ -18,7 +18,9 @@ class UsbI2c
   
   def i2c_adi_read dev_addr, start_addr, count
     command = [0x55,dev_addr | 1, start_addr ,count]
-    @ser.write command.pack 'C'*command.length
+    command = command.pack 'C'*command.length
+    puts command.unpack 'h2*'
+    @ser.write command
     @ser.read
   end
   
